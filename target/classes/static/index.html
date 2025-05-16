@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Lobby</title>
+    <style>
+        :root {
+            --primary-color: #3498DB;
+            --primary-dark: #2980B9;
+            --secondary-color: #E74C3C;
+            --secondary-dark: #C0392B;
+            --bg-color: #2C3E50;
+            --bg-light: #34495E;
+            --text-color: #FFFFFF;
+            --text-muted: #BDC3C7;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 1rem;
+            flex: 1;
+        }
+        
+        .login-screen, .icon-screen, .lobby-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        
+        h1, h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .login-form, .icon-form {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        label {
+            margin-bottom: 0.5rem;
+            align-self: flex-start;
+        }
+        
+        input, button {
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            width: 100%;
+            border-radius: 4px;
+            border: none;
+            font-size: 1rem;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        
+        button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .back-btn {
+            background-color: var(--secondary-color);
+            margin-top: 0.5rem;
+        }
+        
+        .back-btn:hover {
+            background-color: var(--secondary-dark);
+        }
+        
+        .leave-btn {
+            background-color: var(--secondary-color);
+            margin-top: 1rem;
+        }
+        
+        .leave-btn:hover {
+            background-color: var(--secondary-dark);
+        }
+        
+        .lobby-content {
+            width: 100%;
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .chat-container {
+            flex: 3;
+            background-color: var(--bg-light);
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            height: 70vh;
+        }
+        
+        .player-list-container {
+            flex: 1;
+            background-color: var(--bg-light);
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            height: 70vh;
+            min-width: 150px;
+        }
+        
+        .player-list {
+            list-style-type: none;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+        
+        .player-list li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background-color 0.2s ease;
+        }
+        
+        .player-list li:hover {
+            background-color: var(--bg-light);
+        }
+        
+        .player-list li span {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        .player-item {
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+        }
+        
+        .player-item.self {
+            background-color: rgba(46, 204, 113, 0.3);
+        }
+        
+        .player-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.75rem;
+            overflow: hidden;
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease;
+        }
+        
+        .player-avatar:hover {
+            transform: scale(1.1);
+        }
+        
+        .player-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+        }
+        
+        .message {
+            margin-bottom: 0.5rem;
+            padding: 0.75rem;
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.1);
+            word-break: break-word;
+        }
+        
+        .input-container {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .input-container input {
+            flex-grow: 1;
+            margin: 0;
+        }
+        
+        .input-container button {
+            width: auto;
+            margin: 0;
+            white-space: nowrap;
+        }
+        
+        .system-message {
+            font-style: italic;
+            color: var(--text-muted);
+        }
+        
+        .status-indicator {
+            position: fixed;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            z-index: 1000;
+        }
+        
+        .connected {
+            background-color: #2ECC71;
+        }
+        
+        .disconnected {
+            background-color: var(--secondary-color);
+        }
+        
+        .player-count {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        /* Icon selection styles */
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            width: 100%;
+            margin: 1rem 0;
+        }
+        
+        .icon-option {
+            background-color: var(--bg-light);
+            border-radius: 8px;
+            padding: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .icon-option:hover {
+            transform: translateY(-3px);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .icon-option.selected {
+            border-color: var(--primary-color);
+            background-color: rgba(52, 152, 219, 0.3);
+        }
+        
+        .icon-img {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .icon-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.75rem;
+            }
+            
+            h2 {
+                font-size: 1.25rem;
+            }
+            
+            .lobby-content {
+                flex-direction: column;
+            }
+            
+            .chat-container,
+            .player-list-container {
+                height: auto;
+            }
+            
+            .chat-container {
+                height: 50vh;
+            }
+            
+            .player-list-container {
+                height: 30vh;
+                order: -1;
+            }
+            
+            .input-container {
+                flex-direction: column;
+            }
+            
+            .input-container button {
+                width: 100%;
+            }
+            
+            .icon-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            h2 {
+                font-size: 1.1rem;
+            }
+            
+            input, button {
+                padding: 0.5rem;
+            }
+            
+            .status-indicator {
+                top: 0.25rem;
+                right: 0.25rem;
+                font-size: 0.7rem;
+            }
+            
+            .chat-container {
+                padding: 0.5rem;
+                height: 45vh;
+            }
+            
+            .player-list-container {
+                padding: 0.5rem;
+                height: 25vh;
+            }
+            
+            .message {
+                padding: 0.5rem;
+                margin-bottom: 0.25rem;
+            }
+            
+            .player-item {
+                padding: 0.25rem;
+                margin-bottom: 0.25rem;
+            }
+            
+            .icon-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .logo-container {
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .lobby-logo {
+            max-width: 50%; /* Exactly half the size of the original */
+            animation: breathing 2s ease-in-out infinite; /* Faster animation (2s instead of 3s) */
+        }
+        
+        @keyframes breathing {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="status" class="status-indicator disconnected">Disconnected</div>
+    
+    <div class="container">
+        <!-- Username Screen -->
+        <div id="login-screen" class="login-screen">
+            <div class="logo-container">
+                <img src="/images/logo.png" alt="Game Lobby" class="lobby-logo">
+            </div>
+            <div class="login-form">
+                <label for="player-name">Enter your player name:</label>
+                <input type="text" id="player-name" placeholder="Your Name">
+                <button id="continue-btn">Continue</button>
+            </div>
+        </div>
+
+        <!-- Icon Selection Screen -->
+        <div id="icon-screen" class="icon-screen" style="display: none;">
+            <div class="logo-container">
+                <img src="/images/logo.png" alt="Game Lobby" class="lobby-logo">
+            </div>
+            <h2>Choose Your Icon</h2>
+            <div class="icon-form">
+                <div class="icon-grid">
+                    <div class="icon-option" data-icon="icon1.png">
+                        <div class="icon-img">
+                            <img src="/icons/icon1.png" alt="Icon 1">
+                        </div>
+                        <span>Icon 1</span>
+                    </div>
+                    <div class="icon-option" data-icon="icon2.png">
+                        <div class="icon-img">
+                            <img src="/icons/icon2.png" alt="Icon 2">
+                        </div>
+                        <span>Icon 2</span>
+                    </div>
+                    <div class="icon-option" data-icon="icon3.png">
+                        <div class="icon-img">
+                            <img src="/icons/icon3.png" alt="Icon 3">
+                        </div>
+                        <span>Icon 3</span>
+                    </div>
+                    <div class="icon-option" data-icon="icon4.png">
+                        <div class="icon-img">
+                            <img src="/icons/icon4.png" alt="Icon 4">
+                        </div>
+                        <span>Icon 4</span>
+                    </div>
+                    <div class="icon-option" data-icon="icon5.png">
+                        <div class="icon-img">
+                            <img src="/icons/icon5.png" alt="Icon 5">
+                        </div>
+                        <span>Icon 5</span>
+                    </div>
+                </div>
+                <button id="join-btn">Join Lobby</button>
+                <button id="back-btn" class="back-btn">Back</button>
+            </div>
+        </div>
+
+        <!-- Lobby Screen -->
+        <div id="lobby-screen" class="lobby-screen" style="display: none;">
+            <div class="logo-container">
+                <img src="/images/logo.png" alt="Game Lobby" class="lobby-logo">
+            </div>
+            <div class="lobby-content">
+                <div class="chat-container">
+                    <h2>Lobby Chat</h2>
+                    <div id="messages" class="messages"></div>
+                    <div class="input-container">
+                        <input type="text" id="message-input" placeholder="Type your message...">
+                        <button id="send-btn">Send</button>
+                    </div>
+                </div>
+                <div class="player-list-container">
+                    <h2>Players</h2>
+                    <div id="player-count" class="player-count">0 Players Online</div>
+                    <ul id="player-list" class="player-list">
+                        <!-- Player list items will be added here dynamically -->
+                    </ul>
+                </div>
+            </div>
+            <button id="leave-btn" class="leave-btn">Leave Lobby</button>
+        </div>
+    </div>
+
+    <!-- Include SockJS and STOMP client from CDNs -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    
+    <script>
+        // DOM Elements
+        const loginScreen = document.getElementById('login-screen');
+        const iconScreen = document.getElementById('icon-screen');
+        const lobbyScreen = document.getElementById('lobby-screen');
+        const playerNameInput = document.getElementById('player-name');
+        const continueBtn = document.getElementById('continue-btn');
+        const iconOptions = document.querySelectorAll('.icon-option');
+        const joinBtn = document.getElementById('join-btn');
+        const backBtn = document.getElementById('back-btn');
+        const messagesContainer = document.getElementById('messages');
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+        const leaveBtn = document.getElementById('leave-btn');
+        const statusIndicator = document.getElementById('status');
+        const playerList = document.getElementById('player-list');
+        const playerCount = document.getElementById('player-count');
+        
+        // WebSocket variables
+        let stompClient = null;
+        let playerName = '';
+        let selectedIcon = '';
+        
+        // Update status indicator
+        function updateStatus(connected) {
+            if (connected) {
+                statusIndicator.textContent = 'Connected';
+                statusIndicator.classList.remove('disconnected');
+                statusIndicator.classList.add('connected');
+            } else {
+                statusIndicator.textContent = 'Disconnected';
+                statusIndicator.classList.remove('connected');
+                statusIndicator.classList.add('disconnected');
+            }
+        }
+        
+        // Connect to the WebSocket server
+        function connect() {
+            // Get the current location's host (including protocol)
+            const host = window.location.host;
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            
+            // Use relative path for WebSocket - this will work regardless of the URL
+            const socket = new SockJS('/lobby-websocket');
+            stompClient = Stomp.over(socket);
+            
+            // For debugging
+            console.log('Attempting to connect to: ' + window.location.href);
+            
+            // Disable debug logging
+            stompClient.debug = null;
+            
+            stompClient.connect({}, frame => {
+                console.log('Connected: ' + frame);
+                updateStatus(true);
+                
+                // Subscribe to the lobby topic
+                stompClient.subscribe('/topic/lobby', message => {
+                    try {
+                        const messageData = JSON.parse(message.body);
+                        handleMessageReceived(messageData);
+                    } catch (e) {
+                        console.error('Error parsing message:', e);
+                        displaySystemMessage('Error processing message');
+                    }
+                });
+                
+                // Join the lobby
+                joinLobby();
+            }, error => {
+                console.error('Error connecting to WebSocket:', error);
+                updateStatus(false);
+                displaySystemMessage('Failed to connect to the lobby server. Please try again.');
+                showLoginScreen();
+            });
+        }
+        
+        // Handle different message types
+        function handleMessageReceived(message) {
+            if (message.type === 'PLAYER_LIST') {
+                updatePlayerList(message.content);
+            } else {
+                displayMessage(message);
+            }
+        }
+        
+        // Update the player list UI
+        function updatePlayerList(playerListStr) {
+            // Clear the current list
+            playerList.innerHTML = '';
+            
+            // Check if we have players
+            if (!playerListStr) return;
+            
+            // Split the comma-separated list
+            const playerEntries = playerListStr.split(',');
+            
+            // Update the player count
+            playerCount.textContent = `${playerEntries.length} ${playerEntries.length === 1 ? 'Player' : 'Players'} Online`;
+            
+            // Add each player to the list
+            playerEntries.forEach(entry => {
+                const [name, iconId] = entry.split(':');
+                const icon = iconId || 'default';
+                
+                const li = document.createElement('li');
+                li.className = 'player-item' + (name === playerName ? ' self' : '');
+                
+                // Create avatar with icon image
+                const avatar = document.createElement('div');
+                avatar.className = 'player-avatar';
+                
+                const iconImg = document.createElement('img');
+                // Determine file extension based on icon name
+                const fileExtension = icon.includes('.') ? '' : '.png';
+                iconImg.src = `/icons/${icon}${fileExtension}`;
+                iconImg.alt = name.charAt(0).toUpperCase();
+                
+                avatar.appendChild(iconImg);
+                
+                // Create name span
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = name;
+                
+                // Add to list item
+                li.appendChild(avatar);
+                li.appendChild(nameSpan);
+                
+                // Add to player list
+                playerList.appendChild(li);
+            });
+        }
+        
+        // Join the lobby
+        function joinLobby() {
+            if (stompClient && playerName) {
+                stompClient.send("/app/join", {}, JSON.stringify({
+                    content: playerName + " has joined the lobby",
+                    sender: playerName,
+                    type: 'JOIN',
+                    iconId: selectedIcon
+                }));
+                
+                displaySystemMessage(`Welcome to the lobby, ${playerName}!`);
+            }
+        }
+        
+        // Leave the lobby
+        function leaveLobby() {
+            if (stompClient && playerName) {
+                stompClient.send("/app/leave", {}, JSON.stringify({
+                    content: playerName + " has left the lobby",
+                    sender: playerName,
+                    type: 'LEAVE',
+                    iconId: selectedIcon
+                }));
+                
+                disconnect();
+            }
+        }
+        
+        // Disconnect from the WebSocket server
+        function disconnect() {
+            if (stompClient) {
+                stompClient.disconnect();
+                stompClient = null;
+                updateStatus(false);
+            }
+            showLoginScreen();
+        }
+        
+        // Send a message to the lobby
+        function sendMessage() {
+            const content = messageInput.value.trim();
+            if (stompClient && content && playerName) {
+                stompClient.send("/app/chat", {}, JSON.stringify({
+                    content: content,
+                    sender: playerName,
+                    type: 'CHAT',
+                    iconId: selectedIcon
+                }));
+                messageInput.value = '';
+            }
+        }
+        
+        // Display a message in the chat
+        function displayMessage(message) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            
+            if (message.type === 'JOIN' || message.type === 'LEAVE') {
+                messageElement.classList.add('system-message');
+                messageElement.textContent = message.content;
+            } else {
+                messageElement.textContent = `${message.sender}: ${message.content}`;
+            }
+            
+            messagesContainer.appendChild(messageElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // Display a system message
+        function displaySystemMessage(message) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', 'system-message');
+            messageElement.textContent = message;
+            messagesContainer.appendChild(messageElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // Show the login screen
+        function showLoginScreen() {
+            iconScreen.style.display = 'none';
+            lobbyScreen.style.display = 'none';
+            loginScreen.style.display = 'flex';
+            playerName = '';
+            selectedIcon = '';
+            
+            // Clear icon selection
+            iconOptions.forEach(option => {
+                option.classList.remove('selected');
+            });
+        }
+        
+        // Show the icon selection screen
+        function showIconScreen() {
+            loginScreen.style.display = 'none';
+            lobbyScreen.style.display = 'none';
+            iconScreen.style.display = 'flex';
+        }
+        
+        // Show the lobby screen
+        function showLobbyScreen() {
+            loginScreen.style.display = 'none';
+            iconScreen.style.display = 'none';
+            lobbyScreen.style.display = 'flex';
+            messageInput.focus();
+        }
+        
+        // Handle screen resize adjustments
+        function handleResize() {
+            const messages = document.getElementById('messages');
+            if (messages) {
+                messages.scrollTop = messages.scrollHeight;
+            }
+        }
+        
+        // Event Listeners
+        
+        // Continue to icon selection
+        continueBtn.addEventListener('click', () => {
+            playerName = playerNameInput.value.trim();
+            if (playerName) {
+                showIconScreen();
+            } else {
+                alert('Please enter a player name.');
+            }
+        });
+        
+        // Back button
+        backBtn.addEventListener('click', () => {
+            showLoginScreen();
+        });
+        
+        // Icon selection
+        iconOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                // Remove selection from all icons
+                iconOptions.forEach(opt => opt.classList.remove('selected'));
+                
+                // Add selection to this icon
+                option.classList.add('selected');
+                
+                // Save the selected icon
+                selectedIcon = option.getAttribute('data-icon');
+            });
+        });
+        
+        // Join lobby button
+        joinBtn.addEventListener('click', () => {
+            if (!selectedIcon) {
+                alert('Please select an icon.');
+                return;
+            }
+            
+            showLobbyScreen();
+            connect();
+        });
+        
+        sendBtn.addEventListener('click', sendMessage);
+        
+        messageInput.addEventListener('keypress', e => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        leaveBtn.addEventListener('click', leaveLobby);
+        
+        // Enter key for name input
+        playerNameInput.addEventListener('keypress', e => {
+            if (e.key === 'Enter') {
+                continueBtn.click();
+            }
+        });
+        
+        // Listen for resize events
+        window.addEventListener('resize', handleResize);
+        
+        // Handle window close
+        window.addEventListener('beforeunload', () => {
+            leaveLobby();
+        });
+        
+        // Initial status
+        updateStatus(false);
+    </script>
+</body>
+</html>
